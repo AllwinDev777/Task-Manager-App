@@ -1,0 +1,64 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.main {
+    /* background-color: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: auto; */
+    padding: 2rem;
+}
+
+.display-6 {
+    font-weight: 400;
+    line-height: 1.2;
+    font-size: calc(1.375rem + 1.5vw);
+}
+
+.task-item {
+    transition: transform 0.2s;
+}
+
+.task-item:hover {
+    transform: translateX(5px);
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.9em;
+    padding: 0.5em 0.7em;
+}
+
+.alert {
+    margin-top: 1rem;
+}
+
+.navbar {
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+footer {
+    margin-top: 3rem;
+    padding: 1rem 0;
+    border-top: 1px solid #dee2e6;
+}
+
+.text-body-secondary{
+    color: #fff!important;
+}  
+
+.btn-primary{
+    border-radius: 50px;
+}
+
+.btn-secondary{
+    border-radius: 50px;
+}
