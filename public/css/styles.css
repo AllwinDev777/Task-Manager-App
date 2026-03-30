@@ -62,3 +62,16 @@ footer {
 .btn-secondary{
     border-radius: 50px;
 }
+.btn-round{
+    border-radius: 50px;
+}
+.badge-pending {
+    background-color: #f39c12;
+    color: white;
+    margin-left: 10rem;
+}
+.badge-completed {
+    background-color: #27ae60;
+    color: white;
+    margin-left: 8rem;
+}

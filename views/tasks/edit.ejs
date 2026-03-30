@@ -1,0 +1,42 @@
+<%- include('../partials/header') %>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Edit Task</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/tasks/edit/<%= task.id %>">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="<%= task.title %>" maxlength="200" required>
+                        <div class="form-text">Maximum 200 characters</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="4"><%= task.description || '' %></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-control" id="status" name="status">
+                            <option value="pending" <%= task.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="completed" <%= task.status === 'completed' ? 'selected' : '' %>>Completed</option>
+                        </select>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">Update Task</button>
+                        <a href="/tasks" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

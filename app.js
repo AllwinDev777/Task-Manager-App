@@ -47,6 +47,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Database setup
 const db = new sqlite3.Database('./database.db');
 
+//Import
+const taskRoutes = require('./routes/task')
+
+//use routes
+app.use('/tasks', taskRoutes)
+
 // Creating tables
 db.serialize(() => {
     db.run(`
