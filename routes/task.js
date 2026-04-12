@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { isAuthenticated, canAccessTask } = require('../middleware/auth');
+const { body, validationResult } = require('express-validator');
 
 // Middleware to check if user is authenticated for all task routes
 router.use(isAuthenticated);
@@ -56,10 +57,22 @@ router.get('/create', (req, res) => {
 });
 
 // Create new task
-router.post('/create', (req, res) => {
+router.post('/create', [
+    body('title').trim().isLength({ min: 1, max: 200 }).escape(),
+    body('description').trim().escape(),
+    body('status').isIn(['pending', 'completed'])
+], (req, res) => {
+    const errors = validationResult(req);
     const { title, description, status } = req.body;
     const userId = req.session.user.id;
     const db = req.app.locals.db;
+
+    if(!errors.isEmpty()){
+        return res.render('tasks/create',{
+            error: 'Invalid input',
+            user: req.session.user
+        });
+    }
     
     // Input validation
     if (!title || title.trim().length === 0) {

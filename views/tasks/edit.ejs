@@ -8,6 +8,7 @@
             </div>
             <div class="card-body">
                 <form method="POST" action="/tasks/edit/<%= task.id %>">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <div class="mb-3">
                         <label for="title" class="form-label">Title *</label>
                         <input type="text" class="form-control" id="title" name="title" 

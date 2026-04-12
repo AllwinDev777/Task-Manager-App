@@ -5,6 +5,8 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt');
+const csrf = require('csurf');
+const rateLimit = require('express-rate-limit');
 
 // Load environment variables
 dotenv.config();
@@ -15,8 +17,12 @@ const app = express();
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
-            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-            "script-src": ["'self'", "https://cdn.jsdelivr.net"],
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            connectSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            imgSrc: ["'self'", "data:"],
+            fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
         },
     },
 }));
@@ -37,6 +43,23 @@ app.use(session({
     }
 }));
 
+//CSRF using session instead of cookie
+const csrfProtection = csrf({ cookie: false });
+app.use(csrfProtection);
+
+app.use((req, res, next) => {
+    res.locals.csrfToken = req.csrfToken();
+    next();
+});
+
+//Limiting login
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // 5 attempts
+    message: 'Too many login attempts, please try again later.'
+});
+
+
 // Set view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -48,10 +71,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 const db = new sqlite3.Database('./database.db');
 
 //Import
-const taskRoutes = require('./routes/task')
+const taskRoutes = require('./routes/task');
+const adminRoutes = require('./routes/admin');
 
 //use routes
-app.use('/tasks', taskRoutes)
+app.use('/tasks', taskRoutes);
+app.use('/admin', adminRoutes);
 
 // Creating tables
 db.serialize(() => {
@@ -112,7 +137,7 @@ app.get('/login', (req, res) => {
     });
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', loginLimiter ,(req, res) => {
     const { username, password } = req.body;
     
     db.get('SELECT * FROM users WHERE username = ?', [username], (err, user) => {

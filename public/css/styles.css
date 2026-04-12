@@ -68,10 +68,10 @@ footer {
 .badge-pending {
     background-color: #f39c12;
     color: white;
-    margin-left: 10rem;
+    /* margin-left: 10rem; */
 }
 .badge-completed {
     background-color: #27ae60;
     color: white;
-    margin-left: 8rem;
+    /* margin-left: 8rem; */
 }
