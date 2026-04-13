@@ -27,7 +27,7 @@ app.use(helmet({
     },
 }));
 
-// Body parsing middleware
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -188,7 +188,6 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
     const { username, password, confirmPassword } = req.body;
     
-    // Validation
     if (password !== confirmPassword) {
         return res.render('register', { 
             error: 'Passwords do not match',

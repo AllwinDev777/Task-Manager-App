@@ -6,7 +6,6 @@ const { body, validationResult } = require('express-validator');
 // Middleware to check if user is authenticated for all task routes
 router.use(isAuthenticated);
 
-// Display all tasks for the logged-in user
 router.get('/', (req, res) => {
     const db = req.app.locals.db;
     const userId = req.session.user.id;
@@ -25,7 +24,7 @@ router.get('/', (req, res) => {
         `;
         params = [];
     } else {
-        // Regular users see only their tasks
+        // users see only their tasks
         query = 'SELECT * FROM tasks WHERE user_id = ? ORDER BY created_at DESC';
         params = [userId];
     }

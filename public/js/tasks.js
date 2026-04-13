@@ -1,4 +1,3 @@
-// Wait for DOM to load
 document.addEventListener('DOMContentLoaded', function() {
     // Attach confirm dialog to all delete buttons
     const deleteButtons = document.querySelectorAll('.delete-task-btn');

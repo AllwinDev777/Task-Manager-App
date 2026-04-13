@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Find all role select dropdowns and submit the form when changed
     const roleSelects = document.querySelectorAll('.role-select');
     roleSelects.forEach(select => {
         select.addEventListener('change', function() {
