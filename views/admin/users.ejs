@@ -1,0 +1,25 @@
+<%- include('../partials/header') %>
+<h2>Manage Users</h2>
+<table class="table">
+    <thead><tr><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
+    <tbody>
+    <% users.forEach(u => { %>
+        <tr>
+            <td><%= u.username %></td>
+            <td><%= u.role %></td>
+            <td>
+                <form method="POST" action="/admin/users/<%= u.id %>/role" style="display:inline">
+                    <select name="role" onchange="this.form.submit()">
+                        <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>User</option>
+                        <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                    </select>
+                </form>
+                <form method="POST" action="/admin/users/<%= u.id %>/delete" style="display:inline">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete user?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    <% }) %>
+    </tbody>
+</table>
+<%- include('../partials/footer') %>

@@ -1,0 +1,28 @@
+<%- include('partials/header') %>
+
+<div class="row justify-content-center ">
+    <div class="col-md-9">
+        <div class="card main">
+
+        
+    <h1 class="display-6 text-center mb-4">Welcome to Secure Task Manager</h1>
+    
+    
+    <% if (!user) { %>
+        <div class="text-center mb-3">
+        <p class="mb-4">Please login or register to start managing your tasks.</p>
+        <a class="btn btn-primary mx-3" href="/login" role="button">Login</a>
+        <a class="btn btn-secondary" href="/register" role="button">Register</a>
+        </div>
+    <% } else { %>
+        <p>You are logged in as <strong><%= user.username %></strong> with role: <strong><%= user.role %></strong></p>
+        <div class="text-center">
+        <a class="btn btn-primary col-md-4 justify-content-center" href="/tasks" role="button">Go to My Tasks</a>
+        </div>
+    <% } %>
+</div>
+</div>
+</div>
+
+
+<%- include('partials/footer') %>
