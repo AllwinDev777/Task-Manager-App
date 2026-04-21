@@ -1,8 +1,10 @@
 # Secure Task Manager
 
 A safe task management web application that illustrates the CRUD operations, role-based access control (user/admin) and enterprise-level security services. Created using Node.js, Express, SQLite, and EJS.
-
-
+```
+main branch - This branch consists of complete solution for vulnerable code
+vulnerable-code branch - This branch has vulnerable code blocks.
+```
 ---
 
 ## Table of Contents
@@ -213,6 +215,5 @@ This project was developed individually for the **Secure Web Development** assig
 
 **Author:** Allwin Gnanaraj Charles Rajkumar - 24318728 
 **Date:** 15th April 2025
-```
 
 
