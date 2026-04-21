@@ -1,10 +1,10 @@
 # Secure Task Manager
 
-A safe task management web application that illustrates the CRUD operations, role-based access control (user/admin) and enterprise-level security services. Created using Node.js, Express, SQLite, and EJS.
-```
-main branch - This branch consists of complete solution for vulnerable code
-vulnerable-code branch - This branch has vulnerable code blocks.
-```
+A safe task management web application that illustrates the CRUD operations, role-based access control (`user`/`admin`) and enterprise-level security services. Created using Node.js, Express, SQLite, and EJS.
+
+[main](https://github.com/AllwinDev777/Task-Manager-App) branch - This branch consists of complete solution for vulnerable code
+[vulnerable-code](https://github.com/AllwinDev777/Task-Manager-App/tree/vulnerable-code) branch - This branch has vulnerable code blocks.
+
 ---
 
 ## Table of Contents
@@ -104,7 +104,7 @@ secure-task-manager/
    ```bash
      install npm
 
-3. **Create a .env file in root directory**
+3. **Create a `.env` file in root directory**
     SESSION_SECRET=your-super-secret-key-change-this
     PORT=3000
     NODE_ENV=development
@@ -115,7 +115,7 @@ secure-task-manager/
    # or
    npm start        # node app.js
 
-6. **Open Browser and go to http://localhost:3000**
+6. **Open Browser and go to `http://localhost:3000`**
    
    Default admin account (created automatically on first run):
    - Username: admin
@@ -128,17 +128,17 @@ secure-task-manager/
 
 ### Regular User
 
-1. Register a new account (username, password ≥6 chars).
+1. Register a new account (`username`, `password` ≥6 chars).
 2. Login with your credentials.
-3. Create tasks – provide a title, optional description, and status (pending/completed).
-4. View all your tasks on the /tasks page.
-5. Edit or delete any task (delete triggers a confirmation dialog).
+3. Create tasks – provide a title, optional description, and status (`pending`/`completed`).
+4. View all your tasks on the `/tasks` page.
+5. Edit or delete any task.
 6. Logout using the navbar link.
 
 ### Adminsitrator
 1. Login with the admin account (or promote a user via the admin panel).
 2. Navigate to Manage Users (visible only to admins).
-3. Change any user’s role (user/admin) – the dropdown auto‑submits (external JS).
+3. Change any user’s role (`user`/`admin`) – the dropdown auto‑submits (external JS).
 4. Delete any user (except yourself). All associated tasks are also removed.
 
 ### Security Improvements
@@ -162,7 +162,7 @@ The Content Security Policy (configured via Helmet) blocks `unsafe-inline`. All 
 
 ## Testing Process
 
-### Functional Testing (Manual)
+### Functional Testing (`Manual`)
 We tested all user stories and edge cases:
 
 | Test Case | Result |
