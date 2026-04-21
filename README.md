@@ -2,9 +2,9 @@
 
 A safe task management web application that illustrates the CRUD operations, role-based access control (`user`/`admin`) and enterprise-level security services. Created using Node.js, Express, SQLite, and EJS.
 
-[main](https://github.com/AllwinDev777/Task-Manager-App) branch - This branch consists of complete solution for vulnerable code
+[`main`](https://github.com/AllwinDev777/Task-Manager-App) branch - This branch consists of complete solution for vulnerable code
 
-[vulnerable-code](https://github.com/AllwinDev777/Task-Manager-App/tree/vulnerable-code) branch - This branch has vulnerable code blocks.
+[`vulnerable-code`](https://github.com/AllwinDev777/Task-Manager-App/tree/vulnerable-code) branch - This branch has vulnerable code blocks.
 
 ---
 
