@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Attach confirm dialog to all delete buttons
     const deleteButtons = document.querySelectorAll('.delete-task-btn');
     deleteButtons.forEach(button => {
         button.addEventListener('click', function(event) {

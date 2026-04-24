@@ -1,0 +1,145 @@
+[
+    {
+        "filePath": "C:\\Users\\allwi\\secure-task-manager\\app.js",
+        "messages": [
+            {
+                "ruleId": "security/detect-possible-timing-attacks",
+                "severity": 1,
+                "message": "Potential timing attack, left side: true",
+                "line": 191,
+                "column": 5,
+                "endLine": 196,
+                "endColumn": 6
+            }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "const express = require('express');\r\nconst session = require('express-session');\r\nconst helmet = require('helmet');\r\nconst sqlite3 = require('sqlite3').verbose();\r\nconst path = require('path');\r\nconst dotenv = require('dotenv');\r\nconst bcrypt = require('bcrypt');\r\nconst csrf = require('csurf');\r\nconst rateLimit = require('express-rate-limit');\r\n\r\n// Load environment variables\r\ndotenv.config();\r\n\r\nconst app = express();\r\n\r\n// Security middleware\r\napp.use(helmet({\r\n    contentSecurityPolicy: {\r\n        directives: {\r\n            defaultSrc: [\"'self'\"],\r\n            styleSrc: [\"'self'\", \"https://cdn.jsdelivr.net\"],\r\n            scriptSrc: [\"'self'\", \"https://cdn.jsdelivr.net\"],\r\n            connectSrc: [\"'self'\", \"https://cdn.jsdelivr.net\"],\r\n            imgSrc: [\"'self'\", \"data:\"],\r\n            fontSrc: [\"'self'\", \"https://cdn.jsdelivr.net\"],\r\n        },\r\n    },\r\n}));\r\n\r\n\r\napp.use(express.urlencoded({ extended: true }));\r\napp.use(express.json());\r\n\r\n// Session configuration\r\napp.use(session({\r\n    secret: process.env.SESSION_SECRET,\r\n    resave: false,\r\n    saveUninitialized: false,\r\n    cookie: {\r\n        secure: process.env.NODE_ENV === 'production',\r\n        httpOnly: true,\r\n        maxAge: 1000 * 60 * 60 * 24\r\n    }\r\n}));\r\n\r\n//CSRF using session instead of cookie\r\nconst csrfProtection = csrf({ cookie: false });\r\napp.use(csrfProtection);\r\n\r\napp.use((req, res, next) => {\r\n    res.locals.csrfToken = req.csrfToken();\r\n    next();\r\n});\r\n\r\n//Limiting login\r\nconst loginLimiter = rateLimit({\r\n    windowMs: 15 * 60 * 1000, // 15 minutes\r\n    max: 5, // 5 attempts\r\n    message: 'Too many login attempts, please try again later.'\r\n});\r\n\r\n\r\n// Set view engine\r\napp.set('view engine', 'ejs');\r\napp.set('views', path.join(__dirname, 'views'));\r\n\r\n// Static files\r\napp.use(express.static(path.join(__dirname, 'public')));\r\n\r\n// Database setup\r\nconst db = new sqlite3.Database('./database.db');\r\n\r\n//Import\r\nconst taskRoutes = require('./routes/task');\r\nconst adminRoutes = require('./routes/admin');\r\n\r\n//use routes\r\napp.use('/tasks', taskRoutes);\r\napp.use('/admin', adminRoutes);\r\n\r\n// Creating tables\r\ndb.serialize(() => {\r\n    db.run(`\r\n        CREATE TABLE IF NOT EXISTS users (\r\n            id INTEGER PRIMARY KEY AUTOINCREMENT,\r\n            username TEXT UNIQUE NOT NULL,\r\n            password TEXT NOT NULL,\r\n            role TEXT DEFAULT 'user',\r\n            created_at DATETIME DEFAULT CURRENT_TIMESTAMP\r\n        )\r\n    `);\r\n\r\n    db.run(`\r\n        CREATE TABLE IF NOT EXISTS tasks (\r\n            id INTEGER PRIMARY KEY AUTOINCREMENT,\r\n            title TEXT NOT NULL,\r\n            description TEXT,\r\n            status TEXT DEFAULT 'pending',\r\n            user_id INTEGER,\r\n            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,\r\n            FOREIGN KEY (user_id) REFERENCES users (id)\r\n        )\r\n    `);\r\n\r\n    // Creating an admin\r\n    db.get(\"SELECT * FROM users WHERE role = 'admin'\", [], (err, row) => {\r\n        if (!row) {\r\n            const hashedPassword = bcrypt.hashSync('admin123', 10);\r\n            db.run(\r\n                \"INSERT INTO users (username, password, role) VALUES (?, ?, 'admin')\",\r\n                ['admin', hashedPassword]\r\n            );\r\n            console.log('Default admin created (username: admin, password: admin123)');\r\n        }\r\n    });\r\n});\r\n\r\n// Make db available to routes\r\napp.locals.db = db;\r\n\r\n// Routes\r\napp.get('/', (req, res) => {\r\n    res.render('index', { \r\n        title: 'Home',\r\n        user: req.session.user \r\n    });\r\n});\r\n\r\n// Auth routes\r\napp.get('/login', (req, res) => {\r\n    if (req.session.user) {\r\n        return res.redirect('/');\r\n    }\r\n    res.render('login', { \r\n        title: 'Login',\r\n        user: null \r\n    });\r\n});\r\n\r\napp.post('/login', loginLimiter ,(req, res) => {\r\n    const { username, password } = req.body;\r\n    \r\n    db.get('SELECT * FROM users WHERE username = ?', [username], (err, user) => {\r\n        if (err) {\r\n            return res.render('login', { \r\n                error: 'Database error',\r\n                user: null \r\n            });\r\n        }\r\n        \r\n        if (!user) {\r\n            return res.render('login', { \r\n                error: 'Invalid username or password',\r\n                user: null \r\n            });\r\n        }\r\n        \r\n        // Compare password with hashed password\r\n        bcrypt.compare(password, user.password, (err, result) => {\r\n            if (result) {\r\n                // Store user in session (excluding password)\r\n                req.session.user = {\r\n                    id: user.id,\r\n                    username: user.username,\r\n                    role: user.role\r\n                };\r\n                res.redirect('/');\r\n            } else {\r\n                res.render('login', { \r\n                    error: 'Invalid username or password',\r\n                    user: null \r\n                });\r\n            }\r\n        });\r\n    });\r\n});\r\n\r\napp.get('/register', (req, res) => {\r\n    if (req.session.user) {\r\n        return res.redirect('/');\r\n    }\r\n    res.render('register', { \r\n        title: 'Register',\r\n        user: null \r\n    });\r\n});\r\n\r\napp.post('/register', (req, res) => {\r\n    const { username, password, confirmPassword } = req.body;\r\n    \r\n    if (password !== confirmPassword) {\r\n        return res.render('register', { \r\n            error: 'Passwords do not match',\r\n            user: null \r\n        });\r\n    }\r\n    \r\n    if (password.length < 6) {\r\n        return res.render('register', { \r\n            error: 'Password must be at least 6 characters',\r\n            user: null \r\n        });\r\n    }\r\n    \r\n    // Hash password\r\n    bcrypt.hash(password, 10, (err, hash) => {\r\n        if (err) {\r\n            return res.render('register', { \r\n                error: 'Error creating user',\r\n                user: null \r\n            });\r\n        }\r\n        \r\n        // Insert user\r\n        db.run(\r\n            'INSERT INTO users (username, password) VALUES (?, ?)',\r\n            [username, hash],\r\n            function(err) {\r\n                if (err) {\r\n                    if (err.message.includes('UNIQUE')) {\r\n                        return res.render('register', { \r\n                            error: 'Username already exists',\r\n                            user: null \r\n                        });\r\n                    }\r\n                    return res.render('register', { \r\n                        error: 'Database error',\r\n                        user: null \r\n                    });\r\n                }\r\n                \r\n                res.redirect('/login?registered=true');\r\n            }\r\n        );\r\n    });\r\n});\r\n\r\napp.get('/logout', (req, res) => {\r\n    req.session.destroy();\r\n    res.redirect('/');\r\n});\r\n\r\n// Start server\r\nconst PORT = process.env.PORT || 3000;\r\napp.listen(PORT, () => {\r\n    console.log(`Server running on port ${PORT}`);\r\n});",
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "C:\\Users\\allwi\\secure-task-manager\\database\\database.js",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "C:\\Users\\allwi\\secure-task-manager\\eslint.config.js",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "C:\\Users\\allwi\\secure-task-manager\\middleware\\auth.js",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "C:\\Users\\allwi\\secure-task-manager\\middleware\\validation.js",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "C:\\Users\\allwi\\secure-task-manager\\models\\Task.js",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "C:\\Users\\allwi\\secure-task-manager\\models\\User.js",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "C:\\Users\\allwi\\secure-task-manager\\public\\js\\admin.js",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "C:\\Users\\allwi\\secure-task-manager\\public\\js\\tasks.js",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "C:\\Users\\allwi\\secure-task-manager\\routes\\admin.js",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "C:\\Users\\allwi\\secure-task-manager\\routes\\auth.js",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "C:\\Users\\allwi\\secure-task-manager\\routes\\task.js",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    }
+]
